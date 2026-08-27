@@ -7,6 +7,13 @@ require 'capybara/dsl'
 require 'capybara/rspec'
 require 'selenium-webdriver'
 
+# The snap's built-in default ports. Keep in sync with DEFAULT_HTTP_PORT /
+# DEFAULT_HTTPS_PORT in src/apache/utilities/apache-utilities.
+DEFAULT_HTTP_PORT = 21802
+DEFAULT_HTTPS_PORT = 15135
+DEFAULT_HTTP_HOST = "http://localhost:#{DEFAULT_HTTP_PORT}".freeze
+DEFAULT_HTTPS_HOST = "https://localhost:#{DEFAULT_HTTPS_PORT}".freeze
+
 if ENV['FIREFOX']
 	Capybara.register_driver :firefox do |app|
 		options = Selenium::WebDriver::Firefox::Options.new(
@@ -25,7 +32,7 @@ if ENV['FIREFOX']
 
 	Capybara.configure do | config |
 		config.default_driver = :firefox
-		config.app_host = 'http://localhost'
+		config.app_host = DEFAULT_HTTP_HOST
 		config.run_server = false
 	end
 else
@@ -38,7 +45,7 @@ else
 
 	Capybara.configure do | config |
 		config.default_driver = :chrome
-		config.app_host = 'http://localhost'
+		config.app_host = DEFAULT_HTTP_HOST
 		config.run_server = false
 	end
 end
@@ -168,7 +175,7 @@ RSpec.configure do |config|
 		`sudo rm -rf /var/snap/nextcloud/common/backups`
 
 		# Make sure we're using the normal, HTTP host again
-		Capybara.app_host = 'http://localhost'
+		Capybara.app_host = DEFAULT_HTTP_HOST
 	end
 
 	def enable_https(port: nil)
@@ -184,9 +191,9 @@ RSpec.configure do |config|
 	end
 
 	def wait_for_nextcloud(https: false, port: nil)
-		url = 'http://localhost'
+		url = DEFAULT_HTTP_HOST
 		if https
-			url = 'https://localhost'
+			url = DEFAULT_HTTPS_HOST
 		end
 
 		uri = URI.parse(url)
