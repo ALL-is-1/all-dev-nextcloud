@@ -66,16 +66,16 @@ The snap includes multiple services:
       "default": "",
       "description": "Comma-separated list of trusted domains"
     },
-    "http-port": {
+    "ports.http": {
       "type": "number",
       "title": "HTTP Port",
-      "default": 80,
+      "default": 21802,
       "description": "HTTP port for web access"
     },
-    "https-port": {
+    "ports.https": {
       "type": "number",
       "title": "HTTPS Port",
-      "default": 443,
+      "default": 15135,
       "description": "HTTPS port for secure web access"
     },
     "enable-https": {
@@ -147,8 +147,8 @@ The snap includes multiple services:
         "admin-username": "<ADMIN_USERNAME_FROM_FORM>",
         "admin-password": "<ADMIN_PASSWORD_FROM_FORM>",
         "trusted-domains": "<TRUSTED_DOMAINS_FROM_FORM>",
-        "http-port": 80,
-        "https-port": 443,
+        "ports.http": 21802,
+        "ports.https": 15135,
         "enable-https": false,
         "domain": "<DOMAIN_FROM_FORM>",
         "email": "<EMAIL_FROM_FORM>",
@@ -200,7 +200,7 @@ The snap requires the following interface connections:
 | Interface | Purpose |
 |-----------|---------|
 | `network` | Network access for web server and database |
-| `network-bind` | Bind to network ports (80, 443) |
+| `network-bind` | Bind the web ports (21802, 15135) and the loopback ports for MySQL, redis and php-fpm |
 | `network-observe` | Monitor network status (optional) |
 | `removable-media` | Access external storage for data |
 
@@ -254,8 +254,8 @@ Open your browser and navigate to:
 | `admin-username` | string | admin | Administrator username |
 | `admin-password` | string | - | Administrator password |
 | `trusted-domains` | string | - | Comma-separated trusted domains |
-| `http-port` | number | 80 | HTTP port |
-| `https-port` | number | 443 | HTTPS port |
+| `ports.http` | number | 21802 | HTTP port |
+| `ports.https` | number | 15135 | HTTPS port |
 | `enable-https` | boolean | false | Enable HTTPS |
 | `domain` | string | - | Domain for HTTPS certificate |
 | `email` | string | - | Email for Let's Encrypt |
