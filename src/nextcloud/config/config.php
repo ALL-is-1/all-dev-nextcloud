@@ -48,8 +48,8 @@ $CONFIG = array(
 'memcache.locking' => '\OC\Memcache\Redis',
 'memcache.local' => '\OC\Memcache\Redis',
 'redis' => array(
-    'host' => getenv('REDIS_SOCKET'),
-    'port' => 0,
+    'host' => getenv('REDIS_HOST'),
+    'port' => (int) getenv('REDIS_PORT'),
 ),
 
 'log_type' => 'file',
