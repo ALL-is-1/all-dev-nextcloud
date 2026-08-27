@@ -36,7 +36,7 @@ feature "Change http compression" do
 		expect(response["content-encoding"]).to include "br"
 	end
 
-	def nextcloud_response(url: "http://localhost/core/img/favicon.ico")
+	def nextcloud_response(url: "#{DEFAULT_HTTP_HOST}/core/img/favicon.ico")
 		uri = URI(url)
 		req = Net::HTTP::Get.new(uri)
 		req['Accept-Encoding'] = "gzip, deflate, br"
