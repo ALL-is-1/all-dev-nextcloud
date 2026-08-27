@@ -56,9 +56,10 @@ sudo snap set all-dev-nextcloud admin-password="SecurePass123"
 # Configure trusted domains
 sudo snap set all-dev-nextcloud trusted-domains="example.com,192.168.1.100"
 
-# Set custom ports (optional)
-sudo snap set all-dev-nextcloud http-port=8080
-sudo snap set all-dev-nextcloud https-port=8443
+# Set custom ports (optional). The snap ships on its own high ports —
+# HTTP 21802, HTTPS 15135 — so it never fights another app for 80/443.
+sudo snap set all-dev-nextcloud ports.http=21802
+sudo snap set all-dev-nextcloud ports.https=15135
 ```
 
 ### Enable HTTPS
@@ -139,8 +140,8 @@ sudo all-dev-nextcloud.occ check
 sudo snap restart all-dev-nextcloud
 
 # Check firewall
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
+sudo ufw allow 21802/tcp
+sudo ufw allow 15135/tcp
 ```
 
 ### Database Issues
