@@ -71,7 +71,7 @@ if [ -n "$mysql_nextcloud_password" ]; then
 		--database="mysql" \
 		--database-name="nextcloud" \
 		--database-user="nextcloud" \
-		--database-host="localhost:$MYSQL_SOCKET" \
+		--database-host="$NEXTCLOUD_DB_HOST:$NEXTCLOUD_DB_PORT" \
 		--database-pass="$mysql_nextcloud_password" \
 		--data-dir="$data_directory" \
 		--admin-user="$username" \
