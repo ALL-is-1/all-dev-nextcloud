@@ -11,7 +11,7 @@ $AUTOCONFIG = array(
 
 'dbtype' => 'mysql',
 
-'dbhost' => 'localhost:'.getenv('MYSQL_SOCKET'),
+'dbhost' => getenv('NEXTCLOUD_DB_HOST').':'.getenv('NEXTCLOUD_DB_PORT'),
 
 'dbname' => 'nextcloud',
 
