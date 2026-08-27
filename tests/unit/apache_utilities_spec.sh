@@ -53,9 +53,9 @@ Describe 'apache-utilities'
 	End
 
 	Describe 'apache_http_port'
-		It 'defaults to 80'
+		It 'defaults to 21802'
 			When call apache_http_port
-			The output should equal '80'
+			The output should equal '21802'
 		End
 
 		It 'supports being changed'
@@ -66,9 +66,9 @@ Describe 'apache-utilities'
 	End
 
 	Describe 'apache_https_port'
-		It 'defaults to 443'
+		It 'defaults to 15135'
 			When call apache_https_port
-			The output should equal '443'
+			The output should equal '15135'
 		End
 
 		It 'supports being changed'
