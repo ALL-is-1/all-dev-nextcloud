@@ -5,6 +5,16 @@
 
 export MYSQL_ROOT_OPTION_FILE="$SNAP_DATA/mysql/root.ini"
 export MYSQL_PIDFILE="/tmp/pids/mysql.pid"
+# mysqld listens on a dedicated loopback TCP port, which is what Nextcloud
+# connects to. The port is unique to this snap so it cannot clash with a
+# system MySQL (3306) or another app on this host. The socket below is kept
+# for in-snap root maintenance only (run-mysql/mysqldump/health checks): it
+# has to work before any TCP account exists, e.g. during first-boot setup.
+# NB: do NOT name these MYSQL_HOST/MYSQL_PORT. Those are read natively by the
+# MySQL client (--host) and by PHP's mysqli (default port), so exporting them
+# silently redirects every in-snap `mysql` call to TCP and breaks startup.
+export NEXTCLOUD_DB_HOST="127.0.0.1"
+export NEXTCLOUD_DB_PORT="26182"
 export MYSQL_SOCKET="/tmp/sockets/mysql.sock"
 export NEXTCLOUD_PASSWORD_FILE="$SNAP_DATA/mysql/nextcloud_password"
 MYSQL_SETUP_LOCKFILE="/tmp/locks/mysql-setup"
