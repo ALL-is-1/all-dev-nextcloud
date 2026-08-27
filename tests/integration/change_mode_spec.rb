@@ -47,13 +47,13 @@ feature "Change operating mode" do
 
 	def assert_apache_no_signature
 		# Verify that no signature is shown on e.g. 404 pages
-		response = nextcloud_response(url: "http://localhost/give-me-a-404")
+		response = nextcloud_response(url: "#{DEFAULT_HTTP_HOST}/give-me-a-404")
 		expect(response.body.downcase).to_not include "apache"
 	end
 
 	def assert_apache_signature
 		# Verify that a signature is shown on e.g. 404 pages
-		response = nextcloud_response(url: "http://localhost/give-me-a-404")
+		response = nextcloud_response(url: "#{DEFAULT_HTTP_HOST}/give-me-a-404")
 		expect(response.body.downcase).to include "apache"
 	end
 
@@ -69,7 +69,7 @@ feature "Change operating mode" do
 		expect(response["x-powered-by"]).to match /PHP\/8\.3\.\d+/
 	end
 
-	def nextcloud_response(url: "http://localhost")
+	def nextcloud_response(url: DEFAULT_HTTP_HOST)
 		return Net::HTTP.get_response(URI(url))
 	end
 end
