@@ -82,9 +82,11 @@ handle_lets_encrypt()
 	echo "   pointing at the external IP address of this machine."
 	echo ""
 
-	echo "3. Both ports 80 and 443 on the external IP address of this machine"
-	echo "   must point to this machine (e.g. port forwarding might need to be"
-	echo "   setup on your router)."
+	echo "3. Let's Encrypt always validates against external ports 80 and 443."
+	echo "   This snap serves on $(apache_http_port) (HTTP) and $(apache_https_port) (HTTPS)"
+	echo "   instead, so external 80 and 443 must be forwarded to those ports"
+	echo "   on this machine (e.g. port forwarding on your router, or a"
+	echo "   reverse proxy in front of the snap)."
 	echo ""
 
 	while true; do
