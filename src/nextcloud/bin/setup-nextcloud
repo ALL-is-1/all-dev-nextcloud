@@ -33,18 +33,25 @@ if [ ! -d "$NEXTCLOUD_CONFIG_DIR" ]; then
 	cp -r "$SNAP/htdocs/config" "$NEXTCLOUD_CONFIG_DIR"
 else
 	# This is not a new installation, so we don't want to overwrite the config.
-	# However, we recently changed the location of sockets in the snap, so we
-	# need to make sure the config is using the new location.
-	sed -ri "s|('host'\s*=>\s*)'/var/snap/.*redis.sock'|\1'$REDIS_SOCKET'|" "$NEXTCLOUD_CONFIG_DIR/config.php"
-	sed -ri "s|('dbhost'\s*=>\s*)'localhost:/var/snap/.*mysql.sock'|\1'localhost:$MYSQL_SOCKET'|" "$NEXTCLOUD_CONFIG_DIR/config.php"
+	# However, redis and MySQL moved off unix sockets onto dedicated loopback
+	# TCP ports, so rewrite whatever socket path this install still carries.
+	# Both forms are handled: the literal path Nextcloud writes into config.php
+	# once it rewrites it, and the getenv() form from our own template.
+	sed -ri \
+		-e "s|('host'\s*=>\s*)'[^']*redis\.sock'|\1'$REDIS_HOST'|" \
+		-e "s|('host'\s*=>\s*)getenv\('REDIS_SOCKET'\)|\1getenv('REDIS_HOST')|" \
+		-e "s|('port'\s*=>\s*)0,|\1(int) getenv('REDIS_PORT'),|" \
+		-e "s|('dbhost'\s*=>\s*)'[^']*mysql\.sock'|\1'$NEXTCLOUD_DB_HOST:$NEXTCLOUD_DB_PORT'|" \
+		-e "s|('dbhost'\s*=>\s*)'localhost:'\.getenv\('MYSQL_SOCKET'\)|\1getenv('NEXTCLOUD_DB_HOST').':'.getenv('NEXTCLOUD_DB_PORT')|" \
+		"$NEXTCLOUD_CONFIG_DIR/config.php"
 
 	# We'll also always copy over the autoconfig.php, since it's only used
 	# upon installation. Just in case they haven't done that yet.
 	cp -r "$SNAP/htdocs/config/autoconfig.php" "$NEXTCLOUD_CONFIG_DIR/"
 
 	# Also make sure we're using Redis for the memcache and file locking.
-	occ -n config:system:set redis host --value="$REDIS_SOCKET" --type=string
-	occ -n config:system:set redis port --value=0 --type=integer
+	occ -n config:system:set redis host --value="$REDIS_HOST" --type=string
+	occ -n config:system:set redis port --value="$REDIS_PORT" --type=integer
 	occ -n config:system:set memcache.locking --value="\OC\Memcache\Redis" --type=string
 	occ -n config:system:set memcache.local --value="\OC\Memcache\Redis" --type=string
 
