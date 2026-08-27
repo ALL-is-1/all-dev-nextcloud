@@ -52,11 +52,16 @@ if [ $new_install = true ]; then
 	# 3) Create the nextcloud database
 	# 4) Grant the nextcloud user privileges on the nextcloud database
 	printf "Setting up users and nextcloud database... "
+	# Nextcloud connects over loopback TCP, so it authenticates as
+	# 'nextcloud'@'127.0.0.1'. The 'localhost' account is kept for the
+	# in-snap maintenance tools, which go through the unix socket.
 	if run-mysql <<-SQL
 		ALTER USER 'root'@'localhost' IDENTIFIED BY '$root_password';
 		CREATE USER 'nextcloud'@'localhost' IDENTIFIED BY '$nextcloud_password';
+		CREATE USER 'nextcloud'@'127.0.0.1' IDENTIFIED BY '$nextcloud_password';
 		CREATE DATABASE nextcloud;
 		GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'localhost';
+		GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'127.0.0.1';
 		SQL
 	then
 		# Now the root mysql user has a password. Save that as well.
@@ -78,6 +83,25 @@ fi
 # Wait here until mysql is running. MySQL 8 runs the upgrade automatically,
 # so no need to do that, anymore.
 wait_for_mysql -f
+
+# Installs made before Nextcloud moved onto loopback TCP only have the
+# 'nextcloud'@'localhost' account, which a TCP client cannot use. Create the
+# '127.0.0.1' one from the stored password so those installs keep working.
+if [ $new_install = false ]; then
+	existing_nextcloud_password="$(mysql_get_nextcloud_password 2>/dev/null)"
+	if [ -n "$existing_nextcloud_password" ]; then
+		# Not fatal: failing here would restart-loop the daemon, and the
+		# account is very often already in place from a previous boot.
+		if ! run-mysql <<-SQL
+			CREATE USER IF NOT EXISTS 'nextcloud'@'127.0.0.1' IDENTIFIED BY '$existing_nextcloud_password';
+			ALTER USER 'nextcloud'@'127.0.0.1' IDENTIFIED BY '$existing_nextcloud_password';
+			GRANT ALL PRIVILEGES ON nextcloud.* TO 'nextcloud'@'127.0.0.1';
+			SQL
+		then
+			echo "Warning: could not create the 'nextcloud'@'127.0.0.1' MySQL account" >&2
+		fi
+	fi
+fi
 
 # If this was a new installation, wait until the server is all up and running
 # before saving off the nextcloud user's password. This way the presence of the
