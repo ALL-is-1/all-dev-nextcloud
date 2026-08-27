@@ -34,8 +34,8 @@ Describe 'httpd-wrapper'
 			When call src/apache/bin/httpd-wrapper
 			The output should be present
 			The variable DEFINITIONS should equal ""
-			The variable HTTP_PORT should equal "80"
-			The variable HTTPS_PORT should equal "443"
+			The variable HTTP_PORT should equal "21802"
+			The variable HTTPS_PORT should equal "15135"
 		End
 
 		It 'non-standard'
