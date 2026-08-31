@@ -3,8 +3,12 @@
 # shellcheck source=src/common/utilities/common-utilities
 . "$SNAP/utilities/common-utilities"
 
-DEFAULT_HTTP_PORT="80"
-DEFAULT_HTTPS_PORT="443"
+DEFAULT_HTTP_PORT="21802"
+DEFAULT_HTTPS_PORT="15135"
+# The privileged ports older revisions defaulted to. Kept only so the
+# configure hook can recognise and migrate installs that are stuck on them.
+LEGACY_HTTP_PORT="80"
+LEGACY_HTTPS_PORT="443"
 DEFAULT_HTTP_COMPRESSION="false"
 DEFAULT_HTTP_NOTIFY_PUSH_REVERSE_PROXY="false"
 
