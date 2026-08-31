@@ -5,14 +5,30 @@
 # shellcheck source=src/nextcloud/utilities/nextcloud-utilities
 . "$SNAP/utilities/nextcloud-utilities"
 
-# By waiting for Apache we ensure that Nextcloud is setup and fully-updated
-wait_for_apache
+# By waiting for Apache we ensure that Nextcloud is setup and fully-updated.
+#
+# But this wait must be BOUNDED. If Apache can't bind its configured port
+# (e.g. something else already holds it), httpd exits with "no listening
+# sockets available" and systemd restart-loops it forever. An unbounded wait
+# here then hangs until snapd's 10-minute hook timeout, which ABORTS the
+# refresh -- meaning a snap wedged on a conflicting port could never be
+# refreshed onto a revision that fixes it. Refreshing is the cure in that
+# case, so time out and let it proceed.
+apache_wait_remaining=60
+while ! apache_is_running; do
+	apache_wait_remaining=$((apache_wait_remaining - 1))
+	if [ "$apache_wait_remaining" -le 0 ]; then
+		echo "Apache is not running (port conflict?); continuing with the refresh anyway" >&2
+		break
+	fi
+	sleep 1
+done
 
 # We're about to be refreshed. Nextcloud's update process doesn't do a good job
 # of ensuring apps are updated properly and re-enabled after the update. Let's
 # help it out a little by trying to update all apps right now, before the
 # update actually happens.
-if nextcloud_is_installed; then
+if apache_is_running && nextcloud_is_installed; then
 	# Before attempting an update, or otherwise allowing the refresh to
 	# continue, ensure the website that hosts Nextcloud apps is up. If
 	# it's down, app updates won't work, and the refresh can go sideways.
