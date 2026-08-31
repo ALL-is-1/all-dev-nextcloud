@@ -4,18 +4,22 @@
 . "$SNAP/utilities/common-utilities"
 
 export REDIS_PIDFILE="/tmp/pids/redis.pid"
-export REDIS_SOCKET="/tmp/sockets/redis.sock"
+# redis listens on a dedicated loopback TCP port rather than a unix socket.
+# The port is unique to this snap so it cannot collide with a system redis
+# (6379) or with another app on the same host; the bind keeps it off the LAN.
+export REDIS_HOST="127.0.0.1"
+export REDIS_PORT="24455"
 
 mkdir -p "$(dirname "$REDIS_PIDFILE")"
-mkdir -p "$(dirname "$REDIS_SOCKET")"
 mkdir -p "$SNAP_DATA/redis"
 chmod 750 "$(dirname "$REDIS_PIDFILE")"
-chmod 750 "$(dirname "$REDIS_SOCKET")"
 chmod 750 "$SNAP_DATA/redis"
 
 redis_is_running()
 {
-	[ -f "$REDIS_PIDFILE" ] && [ -S "$REDIS_SOCKET" ]
+	# NB: no socket here either -- see the note in php-utilities. redis-cli
+	# would need the network plug, which hooks do not have.
+	[ -f "$REDIS_PIDFILE" ] && kill -0 "$(cat "$REDIS_PIDFILE" 2>/dev/null)" 2>/dev/null
 }
 
 wait_for_redis()
