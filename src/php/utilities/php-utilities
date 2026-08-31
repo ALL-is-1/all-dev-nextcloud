@@ -5,12 +5,14 @@
 
 DEFAULT_MEMORY_LIMIT="512M"
 export PHP_FPM_PIDFILE="/tmp/pids/php-fpm.pid"
-export PHP_FPM_SOCKET="/tmp/sockets/php-fpm.sock"
+# php-fpm listens on a dedicated loopback TCP port rather than a unix socket.
+# The port is unique to this snap so it cannot collide with another app on the
+# same host; the bind address keeps it off the LAN.
+export PHP_FPM_HOST="127.0.0.1"
+export PHP_FPM_PORT="11628"
 
 mkdir -p "$(dirname "$PHP_FPM_PIDFILE")"
-mkdir -p "$(dirname "$PHP_FPM_SOCKET")"
 chmod 750 "$(dirname "$PHP_FPM_PIDFILE")"
-chmod 750 "$(dirname "$PHP_FPM_SOCKET")"
 
 restart_php_if_running()
 {
@@ -33,7 +35,10 @@ restart_php_if_running()
 
 php_is_running()
 {
-	[ -f "$PHP_FPM_PIDFILE" ] && [ -S "$PHP_FPM_SOCKET" ]
+	# NB: must not open a socket. Hooks run under a profile with no network
+	# plug, so a TCP probe here is denied by AppArmor and this would spin
+	# forever -- which hangs pre-refresh until snapd kills the refresh.
+	[ -f "$PHP_FPM_PIDFILE" ] && kill -0 "$(cat "$PHP_FPM_PIDFILE" 2>/dev/null)" 2>/dev/null
 }
 
 wait_for_php()
