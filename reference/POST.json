@@ -1,6 +1,14 @@
 {
   "snaps": [
     {
+      "name": "avahi",
+      "refresh": true
+    },
+    {
+      "name": "all-dev-caddy",
+      "refresh": true
+    },
+    {
       "name": "all-dev-nextcloud",
       "refresh": true
     }
@@ -9,12 +17,46 @@
     {
       "snap": "all-dev-nextcloud",
       "settings": {}
+    },
+    {
+      "snap": "all-dev-caddy",
+      "settings": {
+        "sites.nextcloud.port": "21802",
+        "sites.nextcloud.enable": true,
+        "sites.nextcloud.scheme": "https",
+        "sites.nextcloud.local-name": "nextcloud"
+      }
     }
   ],
   "ignore_failures": false,
   "pre_service_actions": [],
   "post_service_actions": [],
   "interface_connections": [
+    {
+      "plug": "all-dev-caddy:network",
+      "slot": ":network",
+      "action": "connect"
+    },
+    {
+      "plug": "all-dev-caddy:network-bind",
+      "slot": ":network-bind",
+      "action": "connect"
+    },
+    {
+      "plug": "all-dev-caddy:network-observe",
+      "slot": ":network-observe",
+      "action": "connect"
+    },
+    {
+      "plug": "all-dev-caddy:avahi-control",
+      "slot": "avahi:avahi-control",
+      "action": "connect"
+    },
+    {
+      "plug": "all-dev-caddy:avahi-observe",
+      "slot": "avahi:avahi-observe",
+      "action": "connect"
+    },
     {
       "plug": "all-dev-nextcloud:network",
       "slot": ":network",
