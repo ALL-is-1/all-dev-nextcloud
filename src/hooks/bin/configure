@@ -178,6 +178,37 @@ handle_notify_push_reverse_proxy()
 	snapctl restart "${SNAP_INSTANCE_NAME}.apache"
 }
 
+# One-time migration off the legacy privileged ports.
+#
+# Older revisions defaulted to 80/443, and once seeded those values persist in
+# snapd's config across a refresh. So a machine upgraded from such a revision
+# keeps binding 80/443 no matter what DEFAULT_HTTP_PORT says, and collides with
+# the reverse proxy (and anything else that wants them). The visible symptom is
+# this snap failing to bind and consumers getting ECONNREFUSED.
+#
+# Rewrite those two values once, onto this snap's own high ports. The marker
+# means it happens exactly once: a deliberate `snap set ... ports.http=80`
+# afterwards is honoured and never rewritten again.
+migrate_off_privileged_ports()
+{
+	if [ -n "$(snapctl get private.ports.migrated-off-privileged)" ]; then
+		return 0
+	fi
+
+	if [ "$(snapctl get ports.http)" = "$LEGACY_HTTP_PORT" ]; then
+		echo "Migrating HTTP port $LEGACY_HTTP_PORT -> $DEFAULT_HTTP_PORT to avoid a privileged-port conflict"
+		apache_set_http_port "$DEFAULT_HTTP_PORT"
+	fi
+
+	if [ "$(snapctl get ports.https)" = "$LEGACY_HTTPS_PORT" ]; then
+		echo "Migrating HTTPS port $LEGACY_HTTPS_PORT -> $DEFAULT_HTTPS_PORT to avoid a privileged-port conflict"
+		apache_set_https_port "$DEFAULT_HTTPS_PORT"
+	fi
+
+	snapctl set private.ports.migrated-off-privileged=true
+}
+
+migrate_off_privileged_ports
 handle_apache_port_config
 handle_php_memory_limit
 handle_cronjob_interval
